@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"context"
 	"os"
 	"os/exec"
@@ -8,9 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/dnephin/filewatcher/files"
-	"github.com/dnephin/filewatcher/ui"
+	"github.com/joshuarli/filewatcher/files"
+	"github.com/joshuarli/filewatcher/ui"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -63,7 +63,7 @@ func (runner *Runner) HandleEvent(event fsnotify.Event) {
 	select {
 	case runner.events <- event:
 	default:
-		log.Debugf("Events queued, skipping: %s", event.Name)
+		fmt.Printf("Events queued, skipping: %s\n", event.Name)
 	}
 }
 
@@ -78,13 +78,13 @@ func (runner *Runner) run(event fsnotify.Event) {
 
 func (runner *Runner) shouldHandle(event fsnotify.Event) bool {
 	if event.Op&runner.eventOp == 0 {
-		log.Debugf("Skipping excluded event: %s (%v)", event.Op, event.Op&runner.eventOp)
+		fmt.Printf("Skipping excluded event: %s (%v)\n", event.Op, event.Op&runner.eventOp)
 		return false
 	}
 
 	filename := event.Name
 	if runner.excludes.IsMatch(filename) {
-		log.Debugf("Skipping excluded file: %s", filename)
+		fmt.Printf("Skipping excluded file: %s\n", filename)
 		return false
 	}
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 	"time"
+	"fmt"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/dnephin/filewatcher/files"
+	"github.com/joshuarli/filewatcher/files"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -26,14 +26,14 @@ func Watch(watcher *fsnotify.Watcher, opts WatchOptions) error {
 	for {
 		select {
 		case <-time.After(opts.IdleTimeout):
-			log.Warnf("Idle timeout hit: %s", opts.IdleTimeout)
+			fmt.Printf("Idle timeout hit: %s\n", opts.IdleTimeout)
 			return nil
 
 		case event := <-watcher.Events:
-			log.Debugf("Event: %s", event)
+			fmt.Printf("Event: %s", event)
 
 			if isNewDir(event, runner.excludes) {
-				log.Debugf("Watching new directory: %s", event.Name)
+				fmt.Printf("Watching new directory: %s\n", event.Name)
 				watcher.Add(event.Name)
 				continue
 			}
@@ -52,7 +52,7 @@ func isNewDir(event fsnotify.Event, exclude *files.ExcludeList) bool {
 
 	fileInfo, err := os.Stat(event.Name)
 	if err != nil {
-		log.Warnf("Failed to stat %s: %s", event.Name, err)
+		fmt.Printf("Failed to stat %s: %s\n", event.Name, err)
 		return false
 	}
 

@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
-
-	"github.com/fatih/color"
 )
 
 const (
@@ -26,19 +24,17 @@ var (
 // PrintStart message to inform the user that a process is being executed
 func PrintStart(cmd []string) {
 	msg := "filewatcher │ " + strings.Join(cmd, " ")
-	fmt.Print(color.YellowString(box(msg)))
+	fmt.Print(box(msg))
 }
 
 // PrintEnd message to inform the user that a process is done
 func PrintEnd(elapsed time.Duration, filename string, err error) {
 	msg := "OK"
-	msgColor := color.GreenString
 	if err != nil {
 		msg = err.Error()
-		msgColor = color.HiRedString
 	}
 	out := fmt.Sprintf("%s │ %s │ %s", msg, filename, elapsed)
-	fmt.Print(msgColor(box(out)))
+	fmt.Print(box(out))
 }
 
 func box(msg string) string {

@@ -1,11 +1,10 @@
 package files
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -29,7 +28,7 @@ func WalkDirectories(dirs []string, depth int, exclude *ExcludeList) []string {
 
 	walker := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Warnf("Error walking '%s': %s", path, err)
+			fmt.Printf("Error walking '%s': %s\n", path, err)
 			return nil
 		}
 		if !info.IsDir() {

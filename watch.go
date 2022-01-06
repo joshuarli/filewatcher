@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/dnephin/filewatcher/files"
-	"github.com/dnephin/filewatcher/runner"
 	"github.com/fsnotify/fsnotify"
+	"github.com/joshuarli/filewatcher/files"
+	"github.com/joshuarli/filewatcher/runner"
 	"github.com/spf13/pflag"
 )
 
@@ -53,7 +52,7 @@ func (o *eventOpt) Type() string {
 }
 
 func (o *eventOpt) String() string {
-	return fmt.Sprintf("%s", o.value)
+	return string(o.value)
 }
 
 func (o *eventOpt) Value() fsnotify.Op {
@@ -92,10 +91,10 @@ func setupFlags(args []string) *options {
 
 func main() {
 	opts := setupFlags(os.Args)
-	setupLogging(opts)
 
 	if len(opts.command) == 0 {
-		log.Fatalf("A command argument is required.")
+		fmt.Println("A command argument is required.")
+		os.Exit(1)
 	}
 	run(opts)
 }
@@ -103,17 +102,19 @@ func main() {
 func run(opts *options) {
 	excludeList, err := files.NewExcludeList(opts.exclude)
 	if err != nil {
-		log.Fatalf("Error creating exclude list: %s", err)
+		fmt.Printf("Error creating exclude list: %s\n", err)
+		os.Exit(1)
 	}
 
 	dirs := files.WalkDirectories(opts.dirs, opts.depth, excludeList)
 	watcher, err := buildWatcher(dirs)
 	if err != nil {
-		log.Fatalf("Error setting up watcher: %s", err)
+		fmt.Printf("Error setting up watcher: %s\n", err)
+		os.Exit(1)
 	}
 	defer watcher.Close()
 
-	log.Debugf("Handling events: %s", opts.events.Value())
+	fmt.Printf("Handling events: %s\n", opts.events.Value())
 	handler, cleanup := runner.NewRunner(excludeList, opts.events.Value(), opts.command)
 	defer cleanup()
 	watchOpts := runner.WatchOptions{
@@ -121,16 +122,8 @@ func run(opts *options) {
 		Runner:      handler,
 	}
 	if err = runner.Watch(watcher, watchOpts); err != nil {
-		log.Fatalf("Error during watch: %s", err)
-	}
-}
-
-func setupLogging(opts *options) {
-	if opts.verbose {
-		log.SetLevel(log.DebugLevel)
-	}
-	if opts.quiet {
-		log.SetLevel(log.WarnLevel)
+		fmt.Printf("Error during watch: %s\n", err)
+		os.Exit(1)
 	}
 }
 
@@ -140,9 +133,9 @@ func buildWatcher(dirs []string) (*fsnotify.Watcher, error) {
 		return nil, err
 	}
 
-	log.Infof("Watching directories: %s", strings.Join(dirs, ", "))
+	fmt.Printf("Watching directories: %s\n", strings.Join(dirs, ", "))
 	for _, dir := range dirs {
-		log.Debugf("Adding new watch: %s", dir)
+		fmt.Printf("Adding new watch: %s\n", dir)
 		if err = watcher.Add(dir); err != nil {
 			return nil, err
 		}
